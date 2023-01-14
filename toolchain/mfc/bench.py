@@ -21,9 +21,7 @@ def bench():
     table.add_column("Case")
     table.add_column("(Simulation) Runtime (s)")
     
-    def __worker(case: str):
-        nonlocal RESULTS
-        
+    for case in CASES:
         system(["./mfc.sh", "run", f"examples/{case}/case.py", "--no-build", "-t", "pre_process"], stdout=subprocess.DEVNULL)
         start   = time.monotonic()
         system(["./mfc.sh", "run", f"examples/{case}/case.py", "--no-build", "-t", "simulation"], stdout=subprocess.DEVNULL)
@@ -35,15 +33,8 @@ def bench():
             "unit":  "seconds",
             "value": runtime
         })
-        
         table.add_row(case, str(runtime))
-    
-    tasks: typing.List[sched.Task] = [
-        sched.Task(1, __worker, [ case ]) for case in CASES
-    ]
-    
-    cons.print()
-    sched.sched(tasks, 1 if ARG('case_optimization') else ARG('jobs'))
+
     cons.print()
     cons.unindent()
     cons.print("[bold]Benchmark Results:[/bold]")
