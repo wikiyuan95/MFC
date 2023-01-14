@@ -76,6 +76,15 @@ before_script:
   tags:
     - batch
 
+.bench:
+  stage: main
+  script:
+    - cd "$CI_MFC_DIR/$JOB_MODE" && echo "[CI] Running in $(pwd):"
+    - . ./mfc.sh load -c a -m $(if [ "$(echo "$JOB_MODE" | grep -i 'cpu' | wc -c)" -gt 0 ]; then echo "c"; else echo "g"; fi)
+    - ./mfc.sh bench
+  tags:
+    - batch
+
 
 clone-cpu:
   variables:
@@ -117,3 +126,9 @@ test-gpu:
   needs:
     - build-gpu
 
+bench-cpu:
+  variables:
+    JOB_MODE: "cpu"
+  extends: .bench
+  needs:
+    - test-cpu
