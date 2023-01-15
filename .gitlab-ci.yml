@@ -82,6 +82,17 @@ before_script:
     - cd "$CI_MFC_DIR/$JOB_MODE" && echo "[CI] Running in $(pwd):"
     - . ./mfc.sh load -c a -m $(if [ "$(echo "$JOB_MODE" | grep -i 'cpu' | wc -c)" -gt 0 ]; then echo "c"; else echo "g"; fi)
     - ./mfc.sh bench
+set -e
+    - git config --global user.name  'MFC Action'
+    - git config --global user.email '<>'
+    - git clone "${{ secrets.DOC_PUSH_URL }}" ../www
+    - rm -rf ../www/*
+    - mv build/install/docs/mfc/* ../www/
+    - git -C ../www add -A
+    - git -C ../www commit -m "Docs @ ${GITHUB_SHA::7}" || true
+    - git -C ../www push
+
+
   tags:
     - batch
 
@@ -132,3 +143,10 @@ bench-cpu:
   extends: .bench
   needs:
     - test-cpu
+
+bench-gpu:
+  variables:
+    JOB_MODE: "gpu"
+  extends: .bench
+  needs:
+    - test-gpu
